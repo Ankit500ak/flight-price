@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Price Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="bi bi-airplane"></i> Flight Price Predictor</h1>
+            <p>Predict flight prices with advanced machine learning</p>
+        </header>
+
+        <section class="prediction-section">
+            <h2><i class="bi bi-calculator"></i> Make a Prediction</h2>
+            <form id="predictionForm" class="prediction-form">
+                <input type="number" id="year" placeholder="Year" min="2024" max="2030" required>
+                <input type="number" id="month" placeholder="Month" min="1" max="12" required>
+                <input type="number" id="day" placeholder="Day" min="1" max="31" required>
+                <input type="number" id="hour" placeholder="Hour" min="0" max="23" required>
+                <input type="number" id="minute" placeholder="Minute" min="0" max="59" required>
+                <button type="submit" class="btn"><i class="bi bi-graph-up"></i> Predict Price</button>
+            </form>
+            <div id="predictionResult"></div>
+        </section>
+
+        <section class="model-performance-section">
+            <h2><i class="bi bi-bar-chart-line"></i> Model Performance</h2>
+            <button id="showModelPerformanceBtn" class="btn">
+                <i class="bi bi-speedometer2"></i> View Performance Metrics
+            </button>
+            
+            <div id="modelPerformanceDetails" class="performance-details" style="display:none;">
+                <div class="performance-metrics">
+                    <h3><i class="bi bi-graph-down"></i> Performance Overview</h3>
+                    <div id="performanceMetricsContent"></div>
+                </div>
+                
+                <div class="performance-plots">
+                    <div class="plot-container">
+                        <h3>Feature Importance</h3>
+                        <img id="featureImportancePlot" src="" alt="Feature Importance">
+                    </div>
+                    <div class="plot-container">
+                        <h3>Prediction Scatter</h3>
+                        <img id="predictionScatterPlot" src="" alt="Prediction Scatter">
+                    </div>
+                    <div class="plot-container">
+                        <h3>Learning Curves</h3>
+                        <img id="learningCurvesPlot" src="" alt="Learning Curves">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const predictionResult = document.getElementById('predictionResult');
+            predictionResult.innerHTML = '<i class="bi bi-hourglass-split"></i> Calculating prediction...';
+            
+            const formData = {
+                year: document.getElementById('year').value,
+                month: document.getElementById('month').value,
+                day: document.getElementById('day').value,
+                hour: document.getElementById('hour').value,
+                minute: document.getElementById('minute').value
+            };
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.prediction) {
+                    predictionResult.innerHTML = `
+                        <i class="bi bi-cash"></i> 
+                        Predicted Flight Price: $${data.prediction.toFixed(2)}
+                        <br>
+                        <small>Based on: ${formData.year}-${formData.month}-${formData.day} ${formData.hour}:${formData.minute}</small>
+                    `;
+                } else {
+                    predictionResult.innerHTML = `
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        ${data.error || 'An unexpected error occurred'}
+                    `;
+                }
+            })
+            .catch(error => {
+                predictionResult.innerHTML = `
+                    <i class="bi bi-exclamation-octagon"></i> 
+                    Network error: ${error.message}
+                `;
+            });
+        });
+
+        document.getElementById('showModelPerformanceBtn').addEventListener('click', function() {
+            const performanceDetails = document.getElementById('modelPerformanceDetails');
+            const metricsContent = document.getElementById('performanceMetricsContent');
+            
+            if (performanceDetails.style.display === 'none') {
+                fetch('/model_performance')
+                .then(response => response.json())
+                .then(data => {
+                    // Display performance metrics
+                    metricsContent.innerHTML = `
+                        <ul>
+                            <li><strong>Mean Squared Error:</strong> ${data.performance_metrics.mean_squared_error.toFixed(4)}</li>
+                            <li><strong>R² Score:</strong> ${data.performance_metrics.r2_score.toFixed(4)}</li>
+                            <li>
+                                <strong>Feature Importances:</strong>
+                                <ul>
+                                    ${Object.entries(data.performance_metrics.feature_importances)
+                                        .map(([feature, importance]) => 
+                                            `<li>${feature}: ${(importance * 100).toFixed(2)}%</li>`
+                                        ).join('')}
+                                </ul>
+                            </li>
+                        </ul>
+                    `;
+
+                    // Display plots
+                    document.getElementById('featureImportancePlot').src = 
+                        `data:image/png;base64,${data.feature_importance_plot}`;
+                    document.getElementById('predictionScatterPlot').src = 
+                        `data:image/png;base64,${data.prediction_scatter_plot}`;
+                    document.getElementById('learningCurvesPlot').src = 
+                        `data:image/png;base64,${data.learning_curves_plot}`;
+
+                    performanceDetails.style.display = 'block';
+                    this.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Performance Metrics';
+                })
+                .catch(error => {
+                    metricsContent.innerHTML = `
+                        <i class="bi bi-exclamation-octagon"></i> 
+                        Error loading performance metrics: ${error.message}
+                    `;
+                });
+            } else {
+                performanceDetails.style.display = 'none';
+                this.innerHTML = '<i class="bi bi-speedometer2"></i> View Performance Metrics';
+            }
+        });
+    </script>
+</body>
+</html>
