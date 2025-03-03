@@ -119,7 +119,8 @@ The application provides:
 - Visual plots for model understanding
 - Detailed feature importance analysis
 
-- <video src="" controls width="600"></video>
+- <video src="Screen Recording 2025-03-04 000901.mp4
+" controls width="600"></video>
 
 
 ## 🔒 Security & Best Practices
