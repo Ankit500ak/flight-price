@@ -150,6 +150,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📞 Contact
 
-Your Name - youremail@example.com
-
-Project Link: [https://github.com/yourusername/flight-price-predictor](https://github.com/yourusername/flight-price-predictor)
+Your Name -ankit200211222@gmail.com
