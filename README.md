@@ -119,6 +119,9 @@ The application provides:
 - Visual plots for model understanding
 - Detailed feature importance analysis
 
+- <video src="" controls width="600"></video>
+
+
 ## 🔒 Security & Best Practices
 
 - Input validation
